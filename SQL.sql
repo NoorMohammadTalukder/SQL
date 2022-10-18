@@ -236,3 +236,147 @@ not have a product category_id of either 1, 2, or 5.*/
 
 select *from oes.products
 where product_id not in (1,2,5);
+
+/*Write a query to return the following attributes for employees who
+belong to a department:
+- employee_id
+- first_name
+- last_name
+- salary
+- department_name*/
+
+select e.employee_id,e.first_name,e.salary,d.department_name
+from hcm.employees e inner join hcm.departments d
+on d.department_id=e.department_id;
+
+/*Write a query to return the following attributes for all
+employees, including employees who do not belong to a
+department:
+- employee_id
+- first_name
+- last_name
+- salary
+- department_name*/
+
+select e.employee_id,e.first_name,e.salary,d.department_name
+from hcm.employees as e left outer join hcm.departments as d
+on e.department_id= d.department_id;
+
+/*Write a query to return the total number of employees in
+each department. Include the department_name in the
+query result. Also, include employees who have not been
+assigned to a department.*/
+
+select * from hcm.employees;
+select * from hcm.departments;
+
+select d.department_name,
+Count(*) as 'Total Employee'
+from  hcm.employees as e left outer join hcm.departments as d
+on e.department_id= d.department_id
+group by d.department_name;
+
+/*Write a query to return employee details for all employees as well
+as the first and last name of each employee's manager. Include
+the following columns:
+- employee_id
+- first_name
+- last_name
+- manager_first_name (alias for first_name)
+- manager_last_name (alias for last_name)*/
+
+select e.employee_id, e.first_name, e.last_name,
+	   m.first_name as manager_first_name, 
+	   m.last_name as manager_last_name
+from hcm.employees e left join hcm.employees m
+on e.manager_id=m.manager_id;
+
+/*Write a query to return all the products at each warehouse.
+Include the following attributes:
+- product_id
+- product_name
+- warehouse_id
+- warehouse_name
+- quantity_on_hand*/
+select * from oes.products;
+select * from oes.inventories;
+select * from oes.warehouses;
+
+
+select  p.product_id, p.product_name,
+		w.warehouse_id,
+		w.warehouse_name,
+		w.location_id,
+		i.quantity_on_hand 
+from oes.products as p inner join oes.inventories as  i
+on p.product_id=i.product_id
+inner join oes.warehouses as w
+on w.warehouse_id =i.warehouse_id;
+
+/*Return all rows from both the bird.california_sightings
+table and the bird.arizona_sightings table. Use column
+names from the bird.california_sightings table.*/
+
+select *from bird.california_sightings;
+select *from bird.arizona_sightings;
+select * from bird.florida_sightings;
+
+select sighting_id, common_name, 
+		scientific_name, location_of_sighting, 
+		sighting_date
+from bird.california_sightings union all
+select sighting_id, common_name, 
+		scientific_name, sighting_location, 
+		sighting_date
+from bird.arizona_sightings;
+
+/*Return all unique species - as identified by the
+scientific_name column – for species which have been
+sighted in either California or Arizona. Use column names
+from the bird.california_sightings table.*/
+
+select scientific_name
+from  bird.california_sightings
+union 
+select scientific_name
+from bird.arizona_sightings;
+
+/*Return all unique combinations of species
+(scientific_name) and state name. The state_name will
+need to be added on as a new expression which gives
+the applicable state name. Use column names from the
+bird.california_sightings table. Order by state_name
+and then by scientific_name in ascending order.*/
+
+select scientific_name, 'California' as State_Name
+from  bird.california_sightings
+union  
+select scientific_name, 'Arizona' as State_Name
+from bird.arizona_sightings
+order by State_Name,scientific_name;
+
+/*Return all rows from all the bird sightings tables i.e.
+Arizona, California and Florida. Use column names from
+the bird.california_sightings table.*/
+
+SELECT sighting_id, common_name, scientific_name, location_of_sighting, sighting_date, 'California' AS state_name
+FROM bird.california_sightings
+UNION ALL
+SELECT sighting_id, common_name, scientific_name, sighting_location, sighting_date, 'Arizona'
+FROM bird.arizona_sightings
+UNION ALL
+SELECT observation_id, NULL AS common_name, scientific_name, locality, sighting_datetime, 'Florida'
+FROM bird.florida_sightings;
+
+/*Return all unique customer ids for customers who have
+placed orders.*/
+
+select * from oes.customers;
+select * from oes.orders;
+
+select customer_id from oes.customers
+intersect
+select customer_id from oes.orders;
+
+/*Return all unique product ids for products that are
+currently not in stock.*/
