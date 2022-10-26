@@ -380,3 +380,116 @@ select customer_id from oes.orders;
 
 /*Return all unique product ids for products that are
 currently not in stock.*/
+
+SELECT product_id
+FROM oes.products
+EXCEPT 
+SELECT product_id
+FROM oes.inventories;
+
+/*Return the following product details for the cheapest
+product(s) in the oes.products table:
+- product_id
+- product_name
+- list_price
+- category_id*/select * from  oes.products;select product_id, product_name,list_price,category_id from oes.products where list_price=(select min(list_price) from oes.products);/*Use a correlated subquery to return the following product
+details for the cheapest product(s) in each product category
+as given by the category_id column:
+- product_id
+- product_name
+- list_price
+- category_id*/
+select * from  oes.products;
+select * from  oes.product_categories;
+
+select p1.product_id, p1.product_name,p1.list_price,p1.category_id from oes.products as p1 where list_price=(select min(p2.list_price) from oes.products p2 					where p2.category_id=p1.category_id ) order by product_id asc;/*Return the same result as challenge 2 i.e. the cheapest
+product(s) in each product category except this time by
+using an inner join to a derived table*/
+
+select p1.product_id, p1.product_name,p1.list_price,p1.category_idfrom oes.products as p1 inner join (select category_id, min(list_price) as min_list_price			from oes.products  group by category_id ) p2on p2.category_id=p1.category_id and p1.list_price = p2.min_list_price; /*Return the same result as challenge 2 and 3 i.e. the
+cheapest product(s) in each product category except this
+time by using a common table expression.*/
+
+WITH cheapest_product_by_category AS
+(
+SELECT
+	category_id,
+	MIN(list_price) as min_list_price
+FROM oes.products
+GROUP BY category_id
+)
+SELECT 
+	p.product_id,
+	p.product_name,
+	p.list_price,
+	p.category_id  
+FROM oes.products p
+INNER JOIN cheapest_product_by_category p2
+ON p.category_id = p2.category_id
+AND p.list_price = p2.min_list_price;
+
+/*Repeat challenge 4, except this time include the product
+category name as given in the oes.product_categories
+table.*/
+
+WITH cheapest_product_by_category AS
+(
+SELECT
+	category_id,
+	MIN(list_price) as min_list_price
+FROM oes.products
+GROUP BY category_id
+)
+SELECT 
+	p.product_id,
+	p.product_name,
+	p.list_price,
+	p.category_id,
+	pc.category_name
+FROM oes.products p
+INNER JOIN oes.product_categories pc
+ON pc.category_id = p.category_id
+INNER JOIN cheapest_product_by_category p2
+ON p.category_id = p2.category_id
+AND p.list_price = p2.min_list_price;
+
+/*Background:
+-------------
+The employee_id column in the oes.orders table gives the employee_id of the
+salesperson who made the sale.
+
+Challenge:
+-----------
+Use the NOT IN operator to return all employees who have never been the
+salesperson for any customer order. Include the following columns from
+hcm.employees:
+- employee_id
+- first_name
+- last_name*/
+select * from  oes.orders;
+select * from  hcm.employees;
+
+select e.employee_id, e.first_name,e.last_name
+from hcm.employees as e
+where e.employee_id not in (select employee_id from oes.orders 
+							where employee_id is not null);
+
+/*Return unique customers who have ordered the 'PBX Smart Watch 4’.
+Include:
+- customer_id
+- first_name
+- last_name
+- email*/select * from oes.customers;select * from oes.orders;select * from oes.order_items;select * from oes.products;select c.customer_id,
+	c.first_name,
+	c.last_name,
+	c.email
+from oes.customers c
+where c.customer_id in (select 
+							o.customer_id
+						from oes.orders o
+						join oes.order_items oi
+						on oi.order_id = o.order_id
+						join oes.products p
+						on p.product_id = oi.product_id
+						where p.product_name = 'PBX Smart Watch 4'
+						);
